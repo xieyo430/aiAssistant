@@ -18,13 +18,6 @@ import Navbar from './Navbar.vue'
 import Sidebar from './Sidebar.vue'
 
 </script>
-<script>
-export default {
-  components: {
-    Sidebar
-  }
-}
-</script>
 <style lang='scss' scoped>
 .backend-layout {
   height: 100vh;

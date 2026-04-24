@@ -2,8 +2,6 @@
   <el-aside width="264px">
     <el-menu
         default-active="2"
-        @open="handleOpen"
-        @close="handleClose"
         class="menu-style"
       >
         <div class="brand">
@@ -14,8 +12,8 @@
             
           </div>
         </div>
-        <el-menu-item v-for="item in router.options.routes[0].children" :key="item.path" :index="item.path">
-          <el-icon><component :is="item.meta.icon" /></el-icon>
+        <el-menu-item @click="(key) => seleckMenu(item.path)" v-for="item in router.options.routes[0].children" :key="item.path" :index="item.path">
+          <el-icon :size="20">{{ item.meta.icon }}</el-icon>
           <span>{{item.meta.title}}</span>
         </el-menu-item>
        
@@ -28,6 +26,11 @@ import{useRouter}from 'vue-router'
 const router = useRouter()
 
 const iconUrl = new URL("@/assets/images/机器人.png", import.meta.url).href
+
+const seleckMenu = (path) => {
+  const currentRoute = router.options.routes[0]
+  router.push(`${currentRoute.path}/${path}`)
+}
 console.log(router,'router')
 const handleOpen = () => {
 
