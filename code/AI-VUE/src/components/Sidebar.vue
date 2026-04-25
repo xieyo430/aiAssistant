@@ -1,15 +1,15 @@
 <template>
-  <el-aside width="264px">
+  <el-aside :width="isCollapse ? '64px' : '264px'">
     <el-menu
-        default-active="2"
+        :collapse="isCollapse"
+        :collapse-transition="false"
         class="menu-style"
       >
         <div class="brand">
           <el-image style="width: 50px; height: 50px;margin-right: 10px;"  :src="iconUrl"  alt="机器人" />
-          <div class="info-card">
+          <div v-show="!isCollapse" class="info-card">
             <h1 class="brand-title">心理健康AI助手</h1>
-            <p class="brand-subtitle">管理后台</p>
-            
+            <p class="brand-subtitle">管理后台</p>            
           </div>
         </div>
         <el-menu-item @click="(key) => seleckMenu(item.path)" v-for="item in router.options.routes[0].children" :key="item.path" :index="item.path">
@@ -24,10 +24,14 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import{useRouter}from 'vue-router'
+import { useAdminStore } from '@/stores/admin'
 const router = useRouter()
 
 const iconUrl = new URL("@/assets/images/机器人.png", import.meta.url).href
+
+const isCollapse = computed(() => useAdminStore().isCollapse)
 
 const seleckMenu = (path) => {
   const currentRoute = router.options.routes[0]

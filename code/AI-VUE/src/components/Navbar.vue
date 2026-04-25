@@ -1,7 +1,7 @@
 <template>
   <div class="navbar">
     <div class="flex-box">
-      <el-button>
+      <el-button @click="handleCollapse">
         <el-icon><Expand /></el-icon>
       </el-button>
       <p class="page-title">导航栏</p>
@@ -24,7 +24,9 @@
 </template>
 <script setup>
 import {ref} from 'vue'
+import { useAdminStore } from '@/stores/admin'
 import { Expand, ArrowDown, User } from '@element-plus/icons-vue'
+
 
 const handleCommand = (command) => {
   console.log(command,'command')
@@ -32,6 +34,11 @@ const handleCommand = (command) => {
     // 处理退出登录逻辑
   }
 }
+
+const handleCollapse = () => {
+  useAdminStore().toggleCollapse()
+}
+
 </script>
 
 <style lang="scss" scoped>
