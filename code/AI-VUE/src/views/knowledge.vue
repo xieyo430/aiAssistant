@@ -26,7 +26,7 @@ const formItem = [
   {comp:'input',prop:'content',label:'文章内容',placeholder:'请输入文章内容'},
 ]
 
-const handleSearch = () => {
+const handleSearch = (formData) => {
   console.log(formData,'formData')
 }
 </script>
