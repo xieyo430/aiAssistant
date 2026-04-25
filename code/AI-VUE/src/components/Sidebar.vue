@@ -13,7 +13,9 @@
           </div>
         </div>
         <el-menu-item @click="(key) => seleckMenu(item.path)" v-for="item in router.options.routes[0].children" :key="item.path" :index="item.path">
-          <el-icon :size="20">{{ item.meta.icon }}</el-icon>
+          <el-icon :size="20">
+            <component :is="item.meta.icon" />
+          </el-icon>
           <span>{{item.meta.title}}</span>
         </el-menu-item>
        
