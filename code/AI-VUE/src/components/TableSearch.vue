@@ -7,7 +7,7 @@
       <component :is="isComp(item.comp)" :placeholder="item.placeholder" v-model="formData[item.prop]">
         <template v-if="item.comp === 'select'">
           <el-option label="全部" value="" />
-          <el-option v-for="opt in item.options" :key="opt.value" :label="opt.Label" :value="opt.value" />
+          <el-option v-for="opt in item.options" :key="opt.value" :label="opt.label" :value="opt.value" />
         </template>
       </component>
     </el-form-item>

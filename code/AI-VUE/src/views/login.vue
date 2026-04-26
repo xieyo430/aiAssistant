@@ -37,7 +37,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/admin'
 
-const router = useRouter()
+
 
 const ruleFormRef =ref()
 const formData = reactive({
@@ -54,6 +54,7 @@ const rules = reactive({
   ]
 })
 
+const router = useRouter()
 const submitForm = async(formEl) => {
   if(!formEl) return
   await formEl.validate((valid,fields) => {
@@ -64,8 +65,9 @@ const submitForm = async(formEl) => {
         }
         localStorage.setItem('token',data.token)
         localStorage.setItem('userInfo',JSON.stringify(data.userInfo))
-        ElMessage.success('登录成功')
-        router.push('/back/dashboard')
+        if(data.userInfo.userType === 2){
+          router.push('/back/dashboard')
+        }
       })
       
     }
