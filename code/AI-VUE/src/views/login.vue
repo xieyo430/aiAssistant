@@ -33,6 +33,11 @@
 </template>
 <script setup>
 import { ref,reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { login } from '@/api/admin'
+
+const router = useRouter()
 
 const ruleFormRef =ref()
 const formData = reactive({
@@ -53,7 +58,16 @@ const submitForm = async(formEl) => {
   if(!formEl) return
   await formEl.validate((valid,fields) => {
     if (valid) {
-      console.log(fields)
+      login(formData).then(data =>{
+        if(!data.token){
+          return console.error('登陆失败')
+        }
+        localStorage.setItem('token',data.token)
+        localStorage.setItem('userInfo',JSON.stringify(data.userInfo))
+        ElMessage.success('登录成功')
+        router.push('/back/dashboard')
+      })
+      
     }
   })
 }
