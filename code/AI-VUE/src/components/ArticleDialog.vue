@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="文章详情"
+    :title="isEdit ? '编辑文章' : '新增文章'"
     v-model="dialogVisible"
     width="50%"
     @close="handleClose"
@@ -14,11 +14,11 @@
         <el-option v-for="item in props.categories" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </el-form-item>
-    <el-form-item label="文章内容" prop="summary">
-      <el-input type="textarea" v-model="formData.summary" placeholder="请输入文章内容" show-word-limit maxlength="1000" :rows="4" />
+    <el-form-item label="文章摘要" prop="summary">
+      <el-input type="textarea" v-model="formData.summary" placeholder="请输入文章摘要" show-word-limit maxlength="1000" :rows="4" />
     </el-form-item>
-    <el-form-item label="文章标签" prop="tags">
-      <el-select v-model="formData.tagArray" placeholder="请输入文章标签" multiple filterable allow-create style="width: 100%" >
+    <el-form-item label="标签" prop="tags">
+      <el-select v-model="formData.tagArray" placeholder="请输入文章标签（多个标签用逗号隔开）" multiple filterable allow-create style="width: 100%" >
         <el-option v-for="tag in commonTags" :key="tag" :label="tag" :value="tag" />
       </el-select>
     </el-form-item>
@@ -34,11 +34,11 @@
         >
           <div v-if="!imgUrl" class="cover-placehoder">
             <p>点击上传封面</p>
-          </div>      
+          </div>
             <img  v-else class="cover-image" :src="imgUrl" alt="封面图片" />
         </el-upload>
         <div v-if="imgUrl" class="cover-remove">
-          <el-button type="danger" size="mini" @click="handleRemove">删除</el-button>
+          <el-button type="danger" size="small" @click="handleRemove">删除</el-button>
         </div>
       </div>
     </el-form-item>
@@ -48,24 +48,23 @@
     </el-form-item>
   </el-form>
   <div v-if="btnPreview">
-    <h3>预览效果</h3>
+    <h3>内容预览</h3>
     <div v-html="formData.content"></div>
   </div>
   <template #footer>
     <el-button type="primary" @click="btnPreview = !btnPreview">{{ btnPreview ? '关闭预览' : '预览效果' }}</el-button>
     <el-button @click="handleClose">取消</el-button>
-    <el-button :loading="loading" @click="handleSubmit(formRef)">创建</el-button>
+    <el-button type="primary" :loading="loading" @click="handleSubmit">{{ isEdit ? '更新' : '创建' }}</el-button>
   </template>
   </el-dialog>
 </template>
 
 <script setup>
 import { ElMessage } from 'element-plus'
-import { ref,reactive, computed,nextTick } from 'vue'
-import { uploadFile } from '@/api/admin'
+import { ref,reactive, computed,nextTick,watch } from 'vue'
+import { uploadFile,createArticle } from '@/api/admin'
 import { fileBaseUrl } from '@/config/index'
 import RichTextEditor from '@/components/RichTextEditor.vue'
-import { createArticle } from '@/api/admin'
 
 const props = defineProps({
 modelValue:{
@@ -75,10 +74,14 @@ modelValue:{
 categories:{
   type:Array,
   default:()=> []
+},
+article:{
+  type:Object,
+  default:null
 }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue','success'])
 const dialogVisible = computed({
   get(){
     return props.modelValue
@@ -87,17 +90,36 @@ const dialogVisible = computed({
     emit('update:modelValue',val)
   }
 })
+const isEdit = computed(() => !!props.article?.id)
 const handleClose = () =>{
+  formRef.value.resetFields()
 
+  businessId.value = null
+  formData.tagArray = []
+  handleRemove()
+  emit('update:modelValue',false)
 }
+//监听编辑数据
+watch(()=>props.article, (newVal) => {
+  if (newVal) {
+    nextTick(()=>{
+    Object.assign(formData,newVal)
+    businessId.value = newVal.id
+    imgUrl.value = fileBaseUrl + newVal.coverImage
+    })
+  }
+})
+
+
 const formData = reactive({
   "title": "",
-    "content": "",
-    "coverImage": "",
-    "categoryId": "",
-    "summary": "",
-    "tags": "",
-    "id": ""
+  "content": "",
+  "coverImage": "",
+  "categoryId": "",
+  "summary": "",
+  "tags": "",
+  "tagArray": [],
+  "id": ""
 })
 
 const rules = reactive({
@@ -108,28 +130,17 @@ const rules = reactive({
   categoryId: [
     { required: true, message: '请选择分类', trigger: 'change' }
   ],
-  summary: [
-    { required: true, message: '请输入文章内容', trigger: 'blur' },
-    { max: 1000, message: '文章内容最多1000个字符', trigger: 'blur' }
-  ],
-  tags: [
-    { required: true, message: '请输入标签', trigger: 'blur' }
-  ],
-  id: [
-    { required: true, message: '请输入文章ID', trigger: 'blur' }
-  ],
   content: [
     { required: true, message: '请输入文章内容', trigger: 'blur' },
     { max: 5000, message: '文章内容最多5000个字符', trigger: 'blur' }
   ]
 })
 const commonTags = [
-  '情绪管理', '焦虑', '抑郁', '压力', '睡眠', 
+  '情绪管理', '焦虑', '抑郁', '压力', '睡眠',
   '冥想', '正念', '放松', '心理健康', '自我成长',
   '人际关系', '工作压力', '学习方法', '生活技巧'
 ]
-const FormRef = ref()
-//上传
+const formRef = ref()
 const imgUrl = ref('')
 const beforeUpload = (file)=>{
   const isImage = file.type.startsWith('image/')
@@ -141,10 +152,11 @@ const beforeUpload = (file)=>{
   return isImage
 }
 
+const businessId = ref(null)
 const handleUploadRequest = async({file})=>{
-  const businessId = crypto.randomUUID()
+  businessId.value = crypto.randomUUID()
   const fileRes = await uploadFile(file,{
-    businessId:businessId
+    businessId:businessId.value
   })
   imgUrl.value = fileBaseUrl + fileRes.filePath
   formData.coverImage = fileRes.filePath
@@ -154,6 +166,7 @@ const handleRemove = () =>{
   formData.coverImage = ''
 }
 const handleContentChande = (data) =>{
+  console.log(data,'富文本内容')
   formData.content = data.html
 }
 const editorInstance = ref(null)
@@ -166,15 +179,40 @@ const handleEditorCreated = (editor) =>{
   }
 }
 const btnPreview = ref(false)
- const formRef = ref()
 const loading = ref(false)
-const handleSubmit =(formRef) =>{
+const handleSubmit =() =>{
+  // 将tagArray转换为tags字符串
+  if(formData.tagArray && formData.tagArray.length > 0){
+    formData.tags = formData.tagArray.join(',')
+  } else {
+    formData.tags = ''
+  }
+
   formRef.value.validate((valid,fields)=>{
     if(valid){
       loading.value = true
+
+      // 创建提交数据
+      const submitData = {
+        ...formData
+      }
+      // 删除tagArray属性，因为后端不需要这个字段
+      if('tagArray' in submitData){
+        delete submitData.tagArray
+      }
+
+      // 调用创建文章接口
+      createArticle(submitData).then(res=>{
+        loading.value = false
+        emit('success')
+      }).catch(err=>{
+        loading.value = false
+        ElMessage.error('创建文章失败')
+      })
     }
   })
 }
+
 </script>
 
 <style lang="scss" scoped>

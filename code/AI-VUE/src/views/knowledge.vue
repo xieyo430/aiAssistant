@@ -2,7 +2,7 @@
   <div>
     <PageHead title="知识文章">
     <template #buttons>
-      <el-button @click="dialogVisible = true" type="primary">新增</el-button>
+      <el-button @click="handleEdit({})" type="primary">新增</el-button>
     </template>
     </PageHead>
     <TableSearch :formItem="formItem" @search="handleSearch" />
@@ -25,10 +25,10 @@
       </el-table-column>
       <el-table-column prop="authorName" width="150" label="作者" />
       <el-table-column prop="readCount" width="150" label="阅读量" />
-      <el-table-column prop="publishedAt" width="150" label="发布时间" />
+      <el-table-column prop="updatedAt" width="150" label="发布时间" />
       <el-table-column label="操作" width="240" fixed="right">
           <template #default="scope">
-            <el-button text type="primary" >编辑</el-button>
+            <el-button @click="handleEdit(scope.row)" text type="primary" >编辑</el-button>
             <el-button v-if="scope.row.status===0 || scope.row.status===2" text type="success">发布</el-button>
             <el-button v-if="scope.row.status===1" text type="warning">下线</el-button>
             <el-button text type="danger">删除</el-button>
@@ -41,14 +41,14 @@
       layout="prev,pager,next"
       :total="pagination.total"
       @change="handleChange" />
-      <ArticleDialog v-model:modelValue="dialogVisible" :categories="categories" />
+      <ArticleDialog :article="currentArticle" v-model:modelValue="dialogVisible" :categories="categories" @success="handleSuccess"/>
   </div>
 </template>
 <script setup> 
 import { onMounted,reactive,ref } from 'vue'
 import PageHead from '@/components/PageHead.vue'
 import TableSearch from '@/components/TableSearch.vue'
-import { categoryTree,articlePage } from '@/api/admin'
+import { categoryTree,articlePage,getArticleDetail } from '@/api/admin'
 import ArticleDialog from '@/components/ArticleDialog.vue'
 
 const formItem = [
@@ -98,7 +98,25 @@ const categories = ref([])
 const tableData = ref([])
 
 const dialogVisible = ref(false)
+const currentArticle = ref(null)
+const handleSuccess = () =>{}
+const handleEdit = (row) =>{
+ if(!row.id){
+   //新增
+   currentArticle.value = null  
+   dialogVisible.value = true
+ }else{
 
+ //编辑
+ getArticleDetail(row.id).then(res=>{
+  currentArticle.value = res
+  dialogVisible.value = true
+ })
+ }
+
+
+
+}
 onMounted(async() => {
   const data = await categoryTree()
   categories.value = data.map(item =>{

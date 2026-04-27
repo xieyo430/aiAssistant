@@ -4,7 +4,7 @@
  <template v-for="item in formItemAttr" :key="item.prop">
   <el-col v-bind="item.col">
 <el-form-item :label="item.label" :prop="item.prop">
-      <component :is="isComp(item.comp)" :placeholder="item.placeholder" v-model="formData[item.prop]">
+      <component :is="isComp(item.comp)" :placeholder="item.placeholder" v-model="formData[item.prop]" :size="item.size || 'default'">
         <template v-if="item.comp === 'select'">
           <el-option label="全部" value="" />
           <el-option v-for="opt in item.options" :key="opt.value" :label="opt.label" :value="opt.value" />
@@ -51,9 +51,7 @@ const isComp = (comp)=>{
     textarea:'el-textarea',
   }[comp]
 }
-      
-
-      const handleSearch = () => {
+            const handleSearch = () => {
         emit('search', formData)
       }
       const handleReset = (formEl) => {
