@@ -65,6 +65,7 @@ import { ref,reactive, computed,nextTick,watch } from 'vue'
 import { uploadFile,createArticle } from '@/api/admin'
 import { fileBaseUrl } from '@/config/index'
 import RichTextEditor from '@/components/RichTextEditor.vue'
+import { updateArticle } from '@/api/admin'
 
 const props = defineProps({
 modelValue:{
@@ -200,15 +201,21 @@ const handleSubmit =() =>{
       if('tagArray' in submitData){
         delete submitData.tagArray
       }
-
-      // 调用创建文章接口
-      createArticle(submitData).then(res=>{
+      if(!isEdit.value){
+        submitData.id = businessId.value
+        createArticle(submitData).then(res=>{
         loading.value = false
         emit('success')
-      }).catch(err=>{
-        loading.value = false
-        ElMessage.error('创建文章失败')
       })
+      }else{
+        updateArticle(props.article.id,submitData).then(res=>{
+          loading.value = false
+          emit('success')
+        })
+      }
+
+      // 调用创建文章接口
+      
     }
   })
 }

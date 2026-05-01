@@ -29,9 +29,9 @@
       <el-table-column label="操作" width="240" fixed="right">
           <template #default="scope">
             <el-button @click="handleEdit(scope.row)" text type="primary" >编辑</el-button>
-            <el-button v-if="scope.row.status===0 || scope.row.status===2" text type="success">发布</el-button>
-            <el-button v-if="scope.row.status===1" text type="warning">下线</el-button>
-            <el-button text type="danger">删除</el-button>
+            <el-button @click="handlePublish(scope.row)" v-if="scope.row.status===0 || scope.row.status===2" text type="success">发布</el-button>
+            <el-button @click="handleUnpublish(scope.row)" v-if="scope.row.status===1" text type="warning">下线</el-button>
+            <el-button @click="handleDelete(scope.row)" v-if="scope.row.status===0 || scope.row.status===2"  text type="danger">删除</el-button>
           </template>
       </el-table-column>
     </el-table>
@@ -48,8 +48,9 @@
 import { onMounted,reactive,ref } from 'vue'
 import PageHead from '@/components/PageHead.vue'
 import TableSearch from '@/components/TableSearch.vue'
-import { categoryTree,articlePage,getArticleDetail } from '@/api/admin'
+import { categoryTree,articlePage,getArticleDetail,changeArticleStatus,deleteArticle } from '@/api/admin'
 import ArticleDialog from '@/components/ArticleDialog.vue'
+import { ElMessageBox,ElMessage } from 'element-plus' 
 
 const formItem = [
   {comp:'input',prop:'title',label:'文章标题',placeholder:'请输入文章标题'},
@@ -99,7 +100,13 @@ const tableData = ref([])
 
 const dialogVisible = ref(false)
 const currentArticle = ref(null)
-const handleSuccess = () =>{}
+const handleSuccess = () =>{
+  dialogVisible.value = false
+  handleSearch()
+}
+
+
+
 const handleEdit = (row) =>{
  if(!row.id){
    //新增
@@ -114,9 +121,59 @@ const handleEdit = (row) =>{
  })
  }
 
-
-
 }
+
+const handleUnpublish = (row) =>{
+   ElMessageBox.confirm(
+    `确认下线文章${row.title}吗？`,
+    `确认`,
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(()=>{
+      changeArticleStatus(row.id,{status:2}).then(res=>{
+        ElMessage.success('下线成功')
+        handleSearch()
+      })
+    })
+  
+}
+const handlePublish = (row) =>{
+  ElMessageBox.confirm(
+    `确认发布文章${row.title}吗？`,
+    `确认`,
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
+    }).then(()=>{
+      changeArticleStatus(row.id,{status:1}).then(res=>{
+        ElMessage.success('发布成功')
+        handleSearch()
+      })
+    })
+}
+
+const handleDelete = (row) =>{
+  ElMessageBox.confirm(
+    `确认删除文章${row.title}吗？`,
+    `确认`,
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'danger'
+    }).then(()=>{
+      deleteArticle(row.id).then(res=>{
+        ElMessage.success('删除成功')
+        handleSearch()
+      })
+    })
+  
+}
+
+
+
 onMounted(async() => {
   const data = await categoryTree()
   categories.value = data.map(item =>{

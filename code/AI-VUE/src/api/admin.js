@@ -33,3 +33,14 @@ export function createArticle(data) {
 export function getArticleDetail(id) {
   return service.get(`/knowledge/article/${id}`)
 }
+export function updateArticle(id,data) {
+  return service.put(`/knowledge/article/${id}`, data)
+}
+
+export function changeArticleStatus(id,data) {
+  return service.put(`/knowledge/article/${id}/status`,data)
+}
+
+export function deleteArticle(id) {
+  return service.delete(`/knowledge/article/${id}`)
+}
