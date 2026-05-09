@@ -4,6 +4,7 @@ import AuthLayout from '@/components/AuthLayout.vue'
 import BackendLayout from '@/components/BackendLayout.vue'
 //路由配置
 const backendRoutes = [
+
   {
     path: '/back',
     component: BackendLayout,
@@ -43,27 +44,27 @@ const backendRoutes = [
     ]
   },
   {
-  path:'/auth',
-  component:AuthLayout,
-  children:[
-    {
-      path:'login',
-      component:()=>import('@/views/login.vue'),
-      meta:{
-        title:'登录',
-        icon:'Login'
+    path: '/auth',
+    component: AuthLayout,
+    children: [
+      {
+        path: 'login',
+        component: () => import('@/views/login.vue'),
+        meta: {
+          title: '登录',
+          icon: 'Login'
+        }
+      },
+      {
+        path: 'register',
+        component: () => import('@/views/register.vue'),
+        meta: {
+          title: '注册',
+          icon: 'UserAdd'
+        }
       }
-    },
-    {
-      path:'register',
-      component:()=>import('@/views/register.vue'),
-      meta:{
-        title:'注册',
-        icon:'UserAdd'
-      }
-    }
-  ]
-}
+    ]
+  }
 ]
 
 const router = createRouter({

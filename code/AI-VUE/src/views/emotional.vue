@@ -32,7 +32,7 @@
     <el-table-column prop="emotionTriggers" label="情绪触发因素" width="120" />
     <el-table-column prop="diaryContent" label="日记内容" width="250" />
     <el-table-column label="操作" width="240" fixed="right">
-          <template #default="scope">
+          <template >
             <el-button  text type="primary" >详情</el-button>            
             <el-button text type="danger">删除</el-button>
           </template>

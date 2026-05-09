@@ -56,3 +56,7 @@ export function getSessionDetail(sessionId) {
 export function getEmotionalPage(params) {
   return service.get('/emotion-diary/admin/page', { params })
 }
+
+export function getAnalyticsOverview() {
+  return service.get(`/data-analytics/overview`)
+}
